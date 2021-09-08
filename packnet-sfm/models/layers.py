@@ -5,11 +5,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from functools import partial 
 
+# for KITTI, the baseline is 0.54m
+# the focal ~721 pixels
+# the relative disparity outputted by the model has to be scaled by 1242 which is the original image size.
+# depth = 0.54 * 721 / (1242 * disp)
+# It is unclear how to convert this disparity into depth for images that do not match KITTI's focal and aspect ratio.
+# first invert the disparity. then you can try to find a scale by hand matching this to depth in meters.
 def disp_to_depth(disp, min_depth, max_depth):
     '''
     disparity is inversely proportional to depth
     distance_along_camera_z_axis
-    = baseline * focal_length / disparity
+    = baseline * focal_length / (disparity * image_scale)
 
     After Z is determined, X and Y can be calculated 
     using the usual projective camera equations
